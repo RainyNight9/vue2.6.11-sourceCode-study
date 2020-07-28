@@ -1,3 +1,6 @@
+# v2.6.11 简易学习路线指南
+[学习指南地址入口](study.md)
+
 <p align="center"><a href="https://vuejs.org" target="_blank" rel="noopener noreferrer"><img width="100" src="https://vuejs.org/images/logo.png" alt="Vue logo"></a></p>
 
 <p align="center">

@@ -39,6 +39,7 @@ export default class VNode {
     componentOptions?: VNodeComponentOptions,
     asyncFactory?: Function
   ) {
+    // 描述一个真实DOM节点所需要的一系列属性
     this.tag = tag  // 当前节点的标签名
     this.data = data // 当前节点对应的对象，包含了具体的一些数据信息，是一个VNodeData类型，可以参考VNodeData类型中的数据信息
     this.children = children // 当前节点的子节点，是一个数组
@@ -71,21 +72,23 @@ export default class VNode {
   }
 }
 
-// 创建注释节点
+// 创建注释节点，描述一个注释节点只需两个属性 (text, isComment)
 export const createEmptyVNode = (text: string = '') => {
   const node = new VNode()
-  node.text = text
-  node.isComment = true
+  node.text = text // 注释信息
+  node.isComment = true // 是否是注视节点
   return node
 }
 
-// 创建文本节点
+// 创建文本节点 一个属性 (text)
 export function createTextVNode (val: string | number) {
   return new VNode(undefined, undefined, undefined, String(val))
 }
 
+// 克隆节点就是把一个已经存在的节点复制一份出来，它主要是为了做模板编译优化时使用
 // 优化浅克隆
-// 用于静态节点和插槽节点，因为它们可以跨多个渲染，克隆它们可以避免依赖于DOM操作时的错误
+// 用于静态节点和插槽节点，
+// 因为它们可以跨多个渲染，克隆它们可以避免依赖于DOM操作时的错误
 // 以真实dom节点为参照。
 // 创建克隆节点
 export function cloneVNode (vnode: VNode): VNode {
@@ -110,6 +113,7 @@ export function cloneVNode (vnode: VNode): VNode {
   cloned.fnOptions = vnode.fnOptions
   cloned.fnScopeId = vnode.fnScopeId
   cloned.asyncMeta = vnode.asyncMeta
-  cloned.isCloned = true // 现有节点和新克隆得到的节点之间唯一的不同就是克隆得到的节点isCloned为true
+  // 现有节点和新克隆得到的节点之间唯一的不同就是克隆得到的节点isCloned为true
+  cloned.isCloned = true 
   return cloned
 }

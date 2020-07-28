@@ -56,6 +56,7 @@ export class Observer {
         // 拦截器中重写的7个方法循环加入到value上
         copyAugment(value, arrayMethods, arrayKeys)
       }
+      // 将数组中的所有元素都转化为可被侦测的响应式
       this.observeArray(value)
     } else {
       this.walk(value)
@@ -75,6 +76,8 @@ export class Observer {
 
   /**
    * 观察数组项列表每一个子项
+   * 遍历数组中的每一个元素，
+   * 然后通过调用observe函数将每一个元素都转化成可侦测的响应式数据
    */
   observeArray (items: Array<any>) {
     for (let i = 0, l = items.length; i < l; i++) {

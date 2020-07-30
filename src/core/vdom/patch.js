@@ -152,6 +152,7 @@ export function createPatchFunction (backend) {
     const data = vnode.data
     const children = vnode.children
     const tag = vnode.tag
+
     if (isDef(tag)) { // 判断是否为元素节点只需判断该VNode节点是否有tag标签即可
       if (process.env.NODE_ENV !== 'production') {
         if (data && data.pre) {
@@ -182,16 +183,18 @@ export function createPatchFunction (backend) {
           if (isDef(data)) {
             invokeCreateHooks(vnode, insertedVnodeQueue)
           }
-          insert(parentElm, vnode.elm, refElm)
+          insert(parentElm, vnode.elm, refElm) // 插入到DOM中
         }
-        createChildren(vnode, children, insertedVnodeQueue)
+        createChildren(vnode, children, insertedVnodeQueue) // 创建元素节点的子节点
         if (appendAsTree) {
           if (isDef(data)) {
             invokeCreateHooks(vnode, insertedVnodeQueue)
           }
-          insert(parentElm, vnode.elm, refElm)
+          insert(parentElm, vnode.elm, refElm) // 插入到DOM中
         }
       } else {
+        // 这里 是 我们 常用的 web平台代码
+        // 是 
         createChildren(vnode, children, insertedVnodeQueue) // 创建元素节点的子节点
         if (isDef(data)) {
           invokeCreateHooks(vnode, insertedVnodeQueue)
@@ -199,13 +202,17 @@ export function createPatchFunction (backend) {
         insert(parentElm, vnode.elm, refElm) // 插入到DOM中
       }
 
+
+
       if (process.env.NODE_ENV !== 'production' && data && data.pre) {
         creatingElmInVPre--
       }
+
     } else if (isTrue(vnode.isComment)) { // 判断是否为注释节点，只需判断VNode的isComment属性是否为true
       vnode.elm = nodeOps.createComment(vnode.text) // 创建注释节点
       insert(parentElm, vnode.elm, refElm)  // 插入到DOM中
     } else { // 不是元素节点，也不是注释节点，那就是文本节点
+      // nodeOps.createTextNode()在浏览器端等同于document.createTextNode()
       vnode.elm = nodeOps.createTextNode(vnode.text) // 创建文本节点
       insert(parentElm, vnode.elm, refElm) // 插入到DOM中
     }
@@ -294,6 +301,7 @@ export function createPatchFunction (backend) {
         createElm(children[i], insertedVnodeQueue, vnode.elm, null, true, children, i)
       }
     } else if (isPrimitive(vnode.text)) {
+      // nodeOps.createTextNode()在浏览器端等同于document.createTextNode()
       nodeOps.appendChild(vnode.elm, nodeOps.createTextNode(String(vnode.text)))
     }
   }
@@ -481,8 +489,13 @@ export function createPatchFunction (backend) {
             // 调用patchVnode更新节点
             patchVnode(vnodeToMove, newStartVnode, insertedVnodeQueue, newCh, newStartIdx)
             oldCh[idxInOld] = undefined
-            // canmove表示是否需要移动节点，如果为true表示需要移动，则移动节点，如果为false则不用移动
+            // canmove表示是否需要移动节点，
+            // 如果为true表示需要移动，则移动节点，如果为false则不用移动
             canMove && nodeOps.insertBefore(parentElm, vnodeToMove.elm, oldStartVnode.elm)
+            // 上边这种写法 等同于 下边这种写法
+            // if(canMove){
+            //   nodeOps.insertBefore(parentElm, vnodeToMove.elm, oldStartVnode.elm)
+            // }
           } else {
             // same key but different element. treat as new element
             createElm(newStartVnode, insertedVnodeQueue, parentElm, oldStartVnode.elm, false, newCh, newStartIdx)
@@ -548,6 +561,7 @@ export function createPatchFunction (backend) {
       return
     }
 
+    // vnode.elm 与 ownerArray 的节点是否都存在？
     if (isDef(vnode.elm) && isDef(ownerArray)) {
       // clone reused vnode
       vnode = ownerArray[index] = cloneVNode(vnode)
@@ -571,6 +585,7 @@ export function createPatchFunction (backend) {
     // reset by the hot-reload-api and we need to do a proper re-render.
 
     // vnode与oldVnode是否都是静态节点？若是，退出程序
+    // 静态节点无论数据发生任何变化都与它无关，所以都为静态节点的话则直接跳过，无需处理。
     if (isTrue(vnode.isStatic) &&
       isTrue(oldVnode.isStatic) &&
       vnode.key === oldVnode.key &&
@@ -595,6 +610,7 @@ export function createPatchFunction (backend) {
     // vnode有text属性？若没有：
     if (isUndef(vnode.text)) {
       // vnode的子节点与oldVnode的子节点是否都存在？
+      // 该节点包含子节点
       if (isDef(oldCh) && isDef(ch)) {
         // 新旧子节点不一样，更新子节点
         if (oldCh !== ch) updateChildren(elm, oldCh, ch, insertedVnodeQueue, removeOnly)

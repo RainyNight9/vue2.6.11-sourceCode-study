@@ -106,7 +106,7 @@ export function createPatchFunction (backend) {
       nodeOps.removeChild(parent, el) // 调用父节点的removeChild方法
     }
   }
-
+  
   function isUnknownElement (vnode, inVPre) {
     return (
       !inVPre &&
@@ -412,7 +412,7 @@ export function createPatchFunction (backend) {
       removeNode(vnode.elm)
     }
   }
-  // 更新子节点
+  // 优化---更新子节点
   function updateChildren (parentElm, oldCh, newCh, insertedVnodeQueue, removeOnly) {
     let oldStartIdx = 0 // oldChildren开始索引
     let newStartIdx = 0 // newChildren开始索引

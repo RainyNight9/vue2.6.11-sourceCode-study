@@ -149,6 +149,8 @@ VNode类可以描述6种类型的节点，而实际上只有3种类型的节点�
 
 ![更新节点流程图](src/core/gengxinjiedian.jpeg)
 
+#### 更新子节点
+
 >> 更新子节点
 
     这个过程将会存在以下四种情况：
@@ -192,6 +194,11 @@ VNode类可以描述6种类型的节点，而实际上只有3种类型的节点�
 // [源码位置： src/core/vdom/patch.js](src/core/vdom/patch.js)
 
     总结：Vue在更新子节点时是外层循环newChildren数组，内层循环oldChildren数组，把newChildren数组里的每一个元素分别与oldChildren数组里的每一个元素匹配，根据不同情况作出创建子节点、删除子节点、更新子节点以及移动子节点的操作。
+
+#### 优化更新子节点
+
+![优化更新自己点](src/core/youhuagengxin.png)
+
 
 ### 3.模板编译篇
 

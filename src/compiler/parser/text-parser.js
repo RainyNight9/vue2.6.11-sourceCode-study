@@ -17,11 +17,11 @@ type TextParseResult = {
   tokens: Array<string | { '@binding': string }>
 }
 
-// 一个是传入的待解析的文本内容text，
-// 一个包裹变量的符号delimiters
+
+
 export function parseText (
-  text: string,
-  delimiters?: [string, string]
+  text: string, // 一个是传入的待解析的文本内容text，
+  delimiters?: [string, string] // 一个包裹变量的符号delimiters
 ): TextParseResult | void {
   // 检查是否是 变量
   const tagRE = delimiters ? buildRegex(delimiters) : defaultTagRE
@@ -38,6 +38,15 @@ export function parseText (
    */
   let lastIndex = tagRE.lastIndex = 0
   let match, index, tokenValue
+
+
+  // exec( )方法是在一个字符串中执行匹配检索
+  // 循环结束条件是tagRE.exec(text)的结果match是否为null
+
+  // tagRE.exec("hello {{name}}，I am {{age}}")
+  // 返回：["{{name}}", "name", index: 6, input: "hello {{name}}，I am {{age}}", groups: undefined]
+  // tagRE.exec("hello")
+  // 返回：null
   while ((match = tagRE.exec(text))) {
     index = match.index
     // push text token
@@ -55,6 +64,7 @@ export function parseText (
     // 设置lastIndex 以保证下一轮循环时，只从'}}'后面再开始匹配正则
     lastIndex = index + match[0].length
   }
+
   // 当剩下的text不再被正则匹配上时，表示所有变量已经处理完毕
   // 此时如果lastIndex < text.length，表示在最后一个变量后面还有文本
   // 最后将后面的文本再加入到tokens中

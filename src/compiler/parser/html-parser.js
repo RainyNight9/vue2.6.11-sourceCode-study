@@ -64,7 +64,7 @@ export function parseHTML (html, options) {
   // 而现在是span，那么就说明span标签没有被正确闭合，
   // 此时控制台就会抛出警告：‘tag has no matching end tag.’
   // 检测模板字符串中是否有未正确闭合的标签
-  const stack = [] // 维护AST节点层级的栈
+  const stack = [] // 1.维护AST节点层级的栈 2.检测模板字符串中是否有未正确闭合的标签
 
   const expectHTML = options.expectHTML
   const isUnaryTag = options.isUnaryTag || no
@@ -96,12 +96,17 @@ export function parseHTML (html, options) {
         // Comment:
         // 解析是否是注释
         if (comment.test(html)) {
+          // 若为注释，则继续查找是否存在'-->'
           const commentEnd = html.indexOf('-->')
 
           if (commentEnd >= 0) {
+            // 若存在 '-->',继续判断options中是否保留注释
             if (options.shouldKeepComment) {
+              // 若保留注释，则把注释截取出来传给options.comment，创建注释类型的AST节点
+              // "<!--"长度为4
               options.comment(html.substring(4, commentEnd), index, index + commentEnd + 3)
             }
+            // 若不保留注释，则将游标移动到'-->'之后，继续向后解析
             advance(commentEnd + 3)
             continue
           }
@@ -140,10 +145,10 @@ export function parseHTML (html, options) {
         }
 
         // Start tag:
-        // handleStartTag函数用来对parseStartTag函数的解析结果进行进一步处理，
-        // 它接收parseStartTag函数的返回值作为参数。
         const startTagMatch = parseStartTag()
         if (startTagMatch) {
+          // handleStartTag函数用来对parseStartTag函数的解析结果进行进一步处理，
+          // 它接收parseStartTag函数的返回值作为参数。
           handleStartTag(startTagMatch)
           if (shouldIgnoreFirstNewline(startTagMatch.tagName, html)) {
             advance(1)
@@ -151,6 +156,8 @@ export function parseHTML (html, options) {
           continue
         }
       }
+
+
 
       let text, rest, next
       // '<' 不在第一个位置，文本开头
@@ -182,6 +189,8 @@ export function parseHTML (html, options) {
         // '<'是结束标签的开始 ,说明从开始到'<'都是文本，截取出来
         text = html.substring(0, textEnd)
       }
+
+
       // 整个模板字符串里没有找到`<`,说明整个模板字符串都是文本
       // 如果在html字符串中没有找到'<'，表示这一段html字符串都是纯文本
       if (textEnd < 0) {
@@ -230,6 +239,7 @@ export function parseHTML (html, options) {
     }
   }
 
+  
   // Clean up any remaining tags
   // 调用parseEndTag函数并不传递任何参数
   // parseEndTag函数不传递任何参数是用于处理栈中剩余未处理的标签
@@ -238,22 +248,25 @@ export function parseHTML (html, options) {
   parseEndTag()
 
   // advance函数是用来移动解析游标的，解析完一部分就把游标向后移动一部分，确保不会重复解析
+  // 通俗的说就是把下标 index 移动到 接下来的位置，继续解析
+  // 保证了解析过的内容不会被重复解析
   function advance (n) {
     index += n
     html = html.substring(n)
   }
 
-  //parse 开始标签
+  // parse 开始标签
   function parseStartTag () {
     // 开始标签匹配解析
     const start = html.match(startTagOpen)
-    // '<div></div>'.match(startTagOpen)  => ['<div','div',index:0,input:'<div></div>']
+    // 比如：'<div></div>'.match(startTagOpen)  => ['<div','div',index:0,input:'<div></div>']
     if (start) {
       const match = {
         tagName: start[1],
         attrs: [],
         start: index
       }
+      // 移动下标
       advance(start[0].length)
       let end, attr
       /**
@@ -307,11 +320,11 @@ export function parseHTML (html, options) {
     const l = match.attrs.length  // match.attrs 数组的长度
     const attrs = new Array(l) // 一个与match.attrs数组长度相等的数组
 
-    // 循环处理提取出来的标签属性数组match.attrs
+    // 循环处理提取出来的标签属性数组 match.attrs
     for (let i = 0; i < l; i++) {
       // 首先定义了 args常量，它是解析出来的标签属性数组中的每一个属性对象，
       // 即match.attrs 数组中每个元素对象
-      // const args = ["class="a"", "class", "=", "a", undefined, undefined, index: 0, input: "class="a" id="b"></div>", groups: undefined]
+      // 比如：const args = ["class="a"", "class", "=", "a", undefined, undefined, index: 0, input: "class="a" id="b"></div>", groups: undefined]
       const args = match.attrs[i]
       // 接着定义了value，用于存储标签属性的属性值，
       // 在代码中尝试取args的args[3]、args[4]、args[5]，
@@ -345,11 +358,12 @@ export function parseHTML (html, options) {
   }
 
   // parse 结束标签
-  // 结束标签名tagName、结束标签在html字符串中的起始和结束位置start和end
-  // 第一种是三个参数都传递，用于处理普通的结束标签
-  // 第二种是只传递tagName
-  // 第三种是三个参数都不传递，用于处理栈中剩余未处理的标签
+  // 结束标签名tagName、结束标签在html字符串中的起始 和 结束位置 start 和 end
   function parseEndTag (tagName, start, end) {
+    // 这三个参数其实都是可选的，根据传参的不同其功能也不同
+    // 第一种是三个参数都传递，用于处理普通的结束标签
+    // 第二种是只传递tagName
+    // 第三种是三个参数都不传递，用于处理栈中剩余未处理的标签
     let pos, lowerCasedTagName
     if (start == null) start = index
     if (end == null) end = index
@@ -396,6 +410,12 @@ export function parseHTML (html, options) {
       stack.length = pos
       // 以及把lastTag更新为栈顶元素
       lastTag = pos && stack[pos - 1].tag
+
+
+    // 浏览器会自动把</br>标签解析为正常的 <br>标签，
+    // 而对于</p>浏览器则自动将其补全为<p></p>，
+    // 所以Vue为了与浏览器对这两个标签的行为保持一致，
+    // 故对这两个便签单独判断处理
     } else if (lowerCasedTagName === 'br') {
       if (options.start) {
         options.start(tagName, [], true, start, end)

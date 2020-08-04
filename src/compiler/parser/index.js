@@ -2,8 +2,8 @@
 
 import he from 'he'
 import { parseHTML } from './html-parser'
-import { parseText } from './text-parser'
-import { parseFilters } from './filter-parser'
+import { parseText } from './text-parser' // 文本解析器
+import { parseFilters } from './filter-parser' // 过滤解析器
 import { genAssignmentCode } from '../directives/model'
 import { extend, cached, no, camelize, hyphenate } from 'shared/util'
 import { isIE, isEdge, isServerRendering } from 'core/util/env'
@@ -79,7 +79,7 @@ export function createASTElement (
  */
 // parse 函数就是解析器的主函数
 export function parse (
-  template: string,
+  template: string, // 可以看出我们编译的 template 会被当作字符串传入
   options: CompilerOptions
 ): ASTElement | void {
   warn = options.warn || baseWarn
@@ -228,6 +228,7 @@ export function parse (
         attrs = guardIESVGBug(attrs)
       }
 
+      // 调用createASTElement函数来创建元素类型的AST节点
       let element: ASTElement = createASTElement(tag, attrs, currentParent)
       if (ns) {
         element.ns = ns
@@ -367,12 +368,33 @@ export function parse (
         let res
         let child: ?ASTNode
         // 遇到文本信息，就会调用文本解析器parseText函数进行文本解析
+        // 文本解析器内部就干了三件事：
+        // 1.判断传入的文本是否包含变量
+        // 2.构造expression
+        // 3.构造tokens
         // text是带变量的动态文本
         if (!inVPre && text !== ' ' && (res = parseText(text, delimiters))) {
+          // 例如：
+          // let text = "我叫{{name}}，我今年{{age}}岁了"
+          // let res = parseText(text)
+          // res = {
+          //     expression:"我叫"+_s(name)+"，我今年"+_s(age)+"岁了",
+          //     tokens:[
+          //         "我叫",
+          //         {'@binding': name },
+          //         "，我今年",
+          //         {'@binding': age },
+          //       "岁了"
+          //     ]
+          // }
           // 动态文本类型
           child = {
             type: 2,
-            expression: res.expression,
+            // 属性就是把文本中的变量和非变量提取出来，然后把变量用_s()包裹，
+            // 最后按照文本里的顺序把它们用+连接起来
+            expression: res.expression, 
+            // 是个数组，数组内容也是文本中的变量和非变量，
+            // 不一样的是把变量构造成{'@binding': xxx}
             tokens: res.tokens,
             text
           }
@@ -884,6 +906,7 @@ function processAttrs (el) {
     } else {
       // literal attribute
       if (process.env.NODE_ENV !== 'production') {
+        // 如果遇到文本信息，就会调用文本解析器parseText函数进行文本解析
         const res = parseText(value, delimiters)
         if (res) {
           warn(

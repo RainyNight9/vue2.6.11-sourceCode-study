@@ -199,10 +199,46 @@ VNode类可以描述6种类型的节点，而实际上只有3种类型的节点�
 
 ![优化更新自己点](src/core/youhuagengxin.png)
 
+// [源码位置： src/core/vdom/patch.js](src/core/vdom/patch.js)
 
 ### 3.模板编译篇
 
     学习Vue内部是怎么把template模板编译成虚拟DOM,从而渲染出真实DOM
+
+#### 整体渲染流程图如下：
+
+![整体渲染流程图](src/compiler/zhengtiliucheng.png)
+
+#### 模板编译内部流程
+
+    这里就涉及到AST（抽象语法树），比如：一个简单的HTML标签的代码被转换成了一个JS对象，而这个对象中的属性代表了这个标签中一些关键有效信息。 
+    对AST有兴趣的可以在这个网站在线转换试试：https://astexplorer.net/
+
+其具体流程可大致分为三个阶段：// [源码位置: src/complier/index.js](src/complier/index.js)
+
+1.模板解析阶段（解析器）：将一堆模板字符串用正则等方式解析成抽象语法树AST； // [源码位置： src/compiler/parser/index.js](src/compiler/parser/index.js)
+
+    一边解析不同的内容一边调用对应的钩子函数生成对应的AST节点，最终完成将整个模板字符串转化成AST
+    
+    文本解析器的作用就是将HTML解析器解析得到的文本内容进行二次解析，解析文本内容中是否包含变量，如果包含变量，则将变量提取出来进行加工，为后续生产render函数做准备。
+
+2.优化阶段（优化器）：遍历AST，找出其中的静态节点，并打上标记；// [源码位置： src/compiler/optimizer.js](src/compiler/optimizer.js)
+
+3.代码生成阶段（代码生成器）：将AST转换成渲染函数；// [源码位置： src/compiler/codegen/index.js](src/compiler/codegen/index.js)
+
+#### 模板解析阶段
+
+    模板解析其实就是根据被解析内容的特点使用正则等方式将有效信息解析提取出来，根据解析内容的不同分为HTML解析器，文本解析器和过滤器解析器。而文本信息与过滤器信息又存在于HTML标签中，所以在解析器主线函数parse中先调用HTML解析器parseHTML 函数对模板字符串进行解析，如果在解析过程中遇到文本或过滤器信息则再调用相应的解析器进行解析，最终完成对整个模板字符串的解析。
+
+#### 栈
+
+```
+<!-- 1.保证AST节点层级关系  -->
+<div><p><span></span></p></div>
+
+<!-- 2.检测模板字符串中是否有未正确闭合的标签  -->
+<div><p><span></p></div>
+```
 
 ### 4.实例方法篇
 

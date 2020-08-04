@@ -1,8 +1,8 @@
 /* @flow */
 
-import { parse } from './parser/index'
-import { optimize } from './optimizer'
-import { generate } from './codegen/index'
+import { parse } from './parser/index' // 解析器
+import { optimize } from './optimizer' // 优化器
+import { generate } from './codegen/index' // 代码生成器
 import { createCompilerCreator } from './create-compiler'
 
 // `createCompilerCreator` allows creating compilers that use alternative

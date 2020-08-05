@@ -37,7 +37,9 @@ function genStaticKeys (keys: string): Function {
   )
 }
 
+// 标记静态节点
 function markStatic (node: ASTNode) {
+  // 先标记根节点是否为静态节点
   node.static = isStatic(node)
   // 该节点是元素节点，那么还要继续去递归判断它的子节点
   if (node.type === 1) {
@@ -60,6 +62,7 @@ function markStatic (node: ASTNode) {
         node.static = false
       }
     }
+
     // 循环node.children后还不算把所有子节点都遍历完，
     // 因为如果当前节点的子节点中有标签带有v-if、v-else-if、v-else等指令时，
     // 这些子节点在每次渲染时都只渲染一个，
@@ -83,15 +86,17 @@ function markStaticRoots (node: ASTNode, isInFor: boolean) {
     if (node.static || node.once) {
       node.staticInFor = isInFor
     }
+
     // For a node to qualify as a static root, it should have children that
     // are not just static text. Otherwise the cost of hoisting out will
     // outweigh the benefits and it's better off to just always render it fresh.
     // 为了使节点有资格作为静态根节点，它应具有不只是静态文本的子节点。 
     // 否则，优化的成本将超过收益，最好始终将其更新。
+
     // 一个节点要想成为静态根节点，它必须满足以下要求：
-    // 节点本身必须是静态节点；
-    // 必须拥有子节点 children；
-    // 子节点不能只是只有一个文本节点；
+    // 1.节点本身必须是静态节点；
+    // 2.必须拥有子节点 children；
+    // 3.子节点不能只是只有一个文本节点；
     if (node.static && node.children.length && !(
       node.children.length === 1 &&
       node.children[0].type === 3
@@ -101,7 +106,9 @@ function markStaticRoots (node: ASTNode, isInFor: boolean) {
     } else {
       node.staticRoot = false
     }
-    // 继续遍历
+
+    // 如果当前节点不是静态根节点，
+    // 那就继续递归遍历它的子节点node.children 和 node.ifConditions
     if (node.children) {
       for (let i = 0, l = node.children.length; i < l; i++) {
         markStaticRoots(node.children[i], isInFor || !!node.for)
@@ -115,16 +122,6 @@ function markStaticRoots (node: ASTNode, isInFor: boolean) {
   }
 }
 
-// 如果元素节点是静态节点，那就必须满足以下几点要求：
-
-// 如果节点使用了v-pre指令，那就断定它是静态节点；
-// 如果节点没有使用v-pre指令，那它要成为静态节点必须满足：
-//  不能使用动态绑定语法，即标签上不能有v-、@、:开头的属性；
-//  不能使用v-if、v-else、v-for指令；
-//  不能是内置组件，即标签名不能是slot和component；
-//  标签名必须是平台保留标签，即不能是组件；
-//  当前节点的父节点不能是带有 v-for 的 template 标签；
-//  节点的所有属性的 key 都必须是静态节点才有的 key，注：静态节点的key是有限的，它只能是type,tag,attrsList,attrsMap,plain,parent,children,attrs之一；
 
 // 是否是静态节点
 // 参数 节点，返回 true 或者 false
@@ -138,6 +135,18 @@ function isStatic (node: ASTNode): boolean {
   if (node.type === 3) { // text // 不包含变量的纯文本节点
     return true
   }
+
+  // 如果元素节点是静态节点，那就必须满足以下几点要求：
+  // 1.如果节点使用了v-pre指令，那就断定它是静态节点；
+  // 2.如果节点没有使用v-pre指令，那它要成为静态节点必须满足：
+  //   2.1不能使用动态绑定语法，即标签上不能有v-、@、:开头的属性；
+  //   2.2不能使用v-if、v-else、v-for指令；
+  //   2.3不能是内置组件，即标签名不能是slot和component；
+  //   2.4标签名必须是平台保留标签，即不能是组件；
+  //   2.5当前节点的父节点不能是带有 v-for 的 template 标签；
+  //   2.6节点的所有属性的 key 都必须是静态节点才有的 key，
+  //      注：静态节点的key是有限的，
+  //         它只能是type,tag,attrsList,attrsMap,plain,parent,children,attrs之一；
   return !!(node.pre || (
     !node.hasBindings && // no dynamic bindings
     !node.if && !node.for && // not v-if or v-for or v-else

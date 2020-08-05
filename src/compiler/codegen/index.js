@@ -39,7 +39,8 @@ export type CodegenResult = {
   render: string,
   staticRenderFns: Array<string>
 };
-// 核心函数
+
+// 代码生成器核心函数
 // 调用generate函数并传入优化后得到的ast，
 export function generate (
   ast: ASTElement | void,
@@ -60,8 +61,7 @@ export function generate (
 
 // genElement函数逻辑很清晰，就是根据当前 AST 元素节点属性的不同从而执行不同的代码生成函数。
 // 虽然元素节点属性的情况有很多种，但是最后真正创建出来的VNode无非就三种，
-// 分别是元素节点，文本节点，注释节点。
-// 接下来我们就着重分析一下如何生成这三种节点类型的render函数的。
+// 分别是 元素节点，文本节点，注释节点。
 export function genElement (el: ASTElement, state: CodegenState): string {
   if (el.parent) {
     el.pre = el.pre || el.parent.pre
@@ -94,6 +94,7 @@ export function genElement (el: ASTElement, state: CodegenState): string {
       }
 
       const children = el.inlineTemplate ? null : genChildren(el, state, true)
+      
       // 生成元素节点的render函数就是生成一个_c()函数调用的字符串，
       // _c()函数接收三个参数，分别是节点的标签名tagName，节点属性data，节点的子节点列表children
       code = `_c('${el.tag}'${
@@ -487,6 +488,7 @@ export function genChildren (
   altGenElement?: Function,
   altGenNode?: Function
 ): string | void {
+  
   const children = el.children
   if (children.length) {
     const el: any = children[0]

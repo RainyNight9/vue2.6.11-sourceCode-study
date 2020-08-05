@@ -4,9 +4,11 @@ import { extend } from 'shared/util'
 import { detectErrors } from './error-detector'
 import { createCompileToFunctionFn } from './to-function'
 
+// 有没有发现，这是一个 高阶函数
 export function createCompilerCreator (baseCompile: Function): Function {
   return function createCompiler (baseOptions: CompilerOptions) {
     
+    // 子函数
     function compile (
       template: string,
       options?: CompilerOptions
@@ -68,6 +70,7 @@ export function createCompilerCreator (baseCompile: Function): Function {
       return compiled
     }
 
+    // 返回一个对象
     return {
       compile,
       compileToFunctions: createCompileToFunctionFn(compile)

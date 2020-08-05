@@ -240,6 +240,22 @@ VNode类可以描述6种类型的节点，而实际上只有3种类型的节点�
 <div><p><span></p></div>
 ```
 
+#### 优化阶段
+
+    为了提高虚拟DOM中patch过程的性能。在优化阶段将所有静态节点都打上标记，这样在patch过程中就可以跳过对比这些节点
+
+    优化阶段其实就干了两件事：
+    1.在AST中找出所有静态节点并打上标记；
+    2.在AST中找出所有静态根节点并打上标记；
+
+// [源码位置：src/compiler/optimizer.js](src/compiler/optimizer.js)
+
+#### 代码生成阶段
+
+    代码生成其实就是根据模板对应的抽象语法树AST生成一个函数供组件挂载时调用，通过调用这个函数就可以得到模板对应的虚拟DOM
+
+// [源码位置：src/compiler/codegen/index.js](src/compiler/codegen/index.js)
+
 ### 4.实例方法篇
 
     学习Vue中所有实例方法(即所有以$开头的方法)的实现原理
@@ -251,6 +267,14 @@ VNode类可以描述6种类型的节点，而实际上只有3种类型的节点�
 ### 6.生命周期篇
 
     学习Vue中组件的生命周期实现原理
+
+![生命周期图](src/core/shengmingzhouqi.jpeg)
+
+1.Vue类的定义  // [源码位置：src/core/instance/index.js](src/core/instance/index.js)
+
+2.initMixin(Vue) // [源码位置：src/core/instance/init.js](src/core/instance/init.js)
+
+3.Vue.options  // [源码位置：src/core/global-api/index.js](src/core/global-api/index.js)
 
 ### 7.指令篇
 

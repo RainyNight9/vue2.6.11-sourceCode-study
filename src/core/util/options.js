@@ -143,6 +143,7 @@ strats.data = function (
 /**
  * Hooks and props are merged as arrays.
  */
+// 钩子函数 的合并策略
 function mergeHook (
   parentVal: ?Array<Function>,
   childVal: ?Function | ?Array<Function>
@@ -154,6 +155,21 @@ function mergeHook (
         ? childVal
         : [childVal]
     : parentVal
+
+  // 同等下边的 if 判断 
+  // if (childVal) {
+  //   if (parentVal) {
+  //     return parentVal.concat(childVal)
+  //   } else {
+  //     if (Array.isArray(childVal)) {
+  //       return childVal
+  //     } else {
+  //       return [childVal]
+  //     }
+  //   }
+  // } else {
+  //   return parentVal
+  // }
   return res
     ? dedupeHooks(res)
     : res
@@ -169,6 +185,7 @@ function dedupeHooks (hooks) {
   return res
 }
 
+// LIFECYCLE_HOOKS 这个是定义了所有钩子函数名称
 LIFECYCLE_HOOKS.forEach(hook => {
   strats[hook] = mergeHook
 })
@@ -385,6 +402,7 @@ function assertObjectType (name: string, value: any, vm: ?Component) {
  * Merge two option objects into a new one.
  * Core utility used in both instantiation and inheritance.
  */
+// 主要功能是把 parent 和 child 这两个对象根据一些合并策略，合并成一个新对象并返回
 export function mergeOptions (
   parent: Object,
   child: Object,
@@ -407,6 +425,7 @@ export function mergeOptions (
   // the result of another mergeOptions call.
   // Only merged options has the _base property.
   if (!child._base) {
+    // 首先递归把 extends 和 mixins 合并到 parent 上
     if (child.extends) {
       parent = mergeOptions(parent, child.extends, vm)
     }
@@ -417,20 +436,27 @@ export function mergeOptions (
     }
   }
 
-  const options = {}
+  const options = {} // 创建一个空对象options
   let key
+  // 遍历 parent，把parent中的每一项通过调用 mergeField函数合并到空对象options里
   for (key in parent) {
     mergeField(key)
   }
+  // 再遍历 child，把存在于child里但又不在 parent中 的属性继续调用 mergeField函数合并到空对象options里
+  // 这就是设计模式中非常典型的策略模式
   for (key in child) {
     if (!hasOwn(parent, key)) {
       mergeField(key)
     }
   }
+
+  // 它不是简单的把属性从一个对象里复制到另外一个对象里，而是根据被合并的不同的选项有着不同的合并策略
+  // 
   function mergeField (key) {
     const strat = strats[key] || defaultStrat
     options[key] = strat(parent[key], child[key], vm, key)
   }
+  // options就是最终合并后得到的结果
   return options
 }
 

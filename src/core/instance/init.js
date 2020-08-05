@@ -12,10 +12,12 @@ import { extend, mergeOptions, formatComponentName } from '../util/index'
 
 let uid = 0
 
-// 给Vue类的原型上绑定_init方法，同时_init方法的定义也在该函数内部
+
 // new Vue()会执行Vue类的构造函数，构造函数内部会执行_init方法，
 // 所以new Vue()所干的事情其实就是_init方法所干的事情
 export function initMixin (Vue: Class<Component>) {
+  // 给Vue类的原型上绑定_init方法，同时_init方法的定义也在该函数内部
+  // new Vue()所干的事情其实就是_init方法所干的事情
   Vue.prototype._init = function (options?: Object) {
     // 首先，把Vue实例赋值给变量vm，
     const vm: Component = this
@@ -43,10 +45,11 @@ export function initMixin (Vue: Class<Component>) {
       // 得到一个新的options选项赋值给$options属性，
       // 并将$options属性挂载到Vue实例上
       vm.$options = mergeOptions(
-        resolveConstructorOptions(vm.constructor),
+        resolveConstructorOptions(vm.constructor), // 可简单理解为返回 vm.constructor.options，相当于 Vue.options
         options || {},
         vm
       )
+      // 那么问题来了，为什么要把相同的钩子函数转换成数组呢？这是因为Vue允许用户使用Vue.mixin方法
     }
     /* istanbul ignore else */
     if (process.env.NODE_ENV !== 'production') {
@@ -73,10 +76,12 @@ export function initMixin (Vue: Class<Component>) {
       measure(`vue ${vm._name} init`, startTag, endTag)
     }
 
-    // 调用$mount函数进入模板编译与挂载阶段，如果没有传入el选项
+    // 调用$mount函数进入模板编译与挂载阶段
     if (vm.$options.el) {
       vm.$mount(vm.$options.el)
     }
+    // 如果没有传入el选项，则不进入下一个生命周期阶段，
+    // 需要用户手动执行vm.$mount方法才进入下一个生命周期阶段
   }
 }
 

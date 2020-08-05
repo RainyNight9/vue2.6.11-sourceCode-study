@@ -51,15 +51,22 @@ export function initGlobalAPI (Vue: GlobalAPI) {
     return obj
   }
 
-  Vue.options = Object.create(null)
+  // </T> // 这块的这个 <T> ?? 
+  // 看到了吗？ Vue.options 在这里！！！
+  Vue.options = Object.create(null) //  创建一个空对象
   ASSET_TYPES.forEach(type => {
     Vue.options[type + 's'] = Object.create(null)
   })
+  // 所以遍历完的代码相当于
+  // Vue.options.components = {}
+  // Vue.options.directives = {}
+  // Vue.options.filters = {}
 
   // this is used to identify the "base" constructor to extend all plain-object
   // components with in Weex's multi-instance scenarios.
   Vue.options._base = Vue
 
+  // 把一些内置组件扩展到 Vue.options.components 上
   extend(Vue.options.components, builtInComponents)
 
   initUse(Vue)

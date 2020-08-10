@@ -10,10 +10,14 @@ import {
 import { updateListeners } from '../vdom/helpers/index'
 
 export function initEvents (vm: Component) {
+  // 在vm上新增_events属性并将其赋值为空对象，用来存储事件
   vm._events = Object.create(null)
   vm._hasHookEvent = false
   // init parent attached events
+  // 获取父组件注册的事件赋给listeners，
   const listeners = vm.$options._parentListeners
+  // 如果listeners不为空，
+  // 则调用updateComponentListeners函数，将父组件向子组件注册的事件注册到子组件的实例中
   if (listeners) {
     updateComponentListeners(vm, listeners)
   }
@@ -45,6 +49,7 @@ export function updateComponentListeners (
   oldListeners: ?Object
 ) {
   target = vm
+  // 调用了updateListeners函数，并把listeners以及add和remove这两个函数传入
   updateListeners(listeners, oldListeners || {}, add, remove, createOnceHandler, vm)
   target = undefined
 }

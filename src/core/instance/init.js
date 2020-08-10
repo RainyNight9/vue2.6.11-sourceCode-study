@@ -63,10 +63,13 @@ export function initMixin (Vue: Class<Component>) {
     initLifecycle(vm) // 初始化生命周期
     initEvents(vm)  // 初始化事件
     initRender(vm) // 初始化渲染
+
     callHook(vm, 'beforeCreate') // 调用生命周期钩子函数
+
     initInjections(vm) // resolve injections before data/props // 初始化 injections
     initState(vm) // 初始化props,methods,data,computed,watch
     initProvide(vm) // resolve provide after data/props  // 初始化 provide
+    
     callHook(vm, 'created') // 调用生命周期钩子函数
 
     /* istanbul ignore if */

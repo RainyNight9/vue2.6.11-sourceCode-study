@@ -93,6 +93,9 @@ export function addHandler (
   // normalize click.right and click.middle since they don't actually fire
   // this is technically browser-specific, but at least for now browsers are
   // the only target envs that have right/middle clicks.
+
+  // 第一步
+  // 首先根据 modifier 修饰符对事件名 name 做处理
   if (modifiers.right) {
     if (dynamic) {
       name = `(${name})==='click'?'contextmenu':(${name})`
@@ -109,20 +112,29 @@ export function addHandler (
   }
 
   // check capture modifier
+  // 判断是否有capture修饰符
   if (modifiers.capture) {
     delete modifiers.capture
+    // 给事件名前加'!'用以标记capture修饰符
     name = prependModifierMarker('!', name, dynamic)
   }
+  // 判断是否有once修饰符
   if (modifiers.once) {
     delete modifiers.once
+    // 给事件名前加'~'用以标记once修饰符
     name = prependModifierMarker('~', name, dynamic)
   }
   /* istanbul ignore if */
+  // 判断是否有passive修饰符
   if (modifiers.passive) {
     delete modifiers.passive
+    // 给事件名前加'&'用以标记passive修饰符
     name = prependModifierMarker('&', name, dynamic)
   }
 
+  // 第二步
+  // 接着根据 modifier.native 判断事件是一个浏览器原生事件还是自定义事件，
+  // 分别对应 el.nativeEvents 和 el.events
   let events
   if (modifiers.native) {
     delete modifiers.native
@@ -130,12 +142,27 @@ export function addHandler (
   } else {
     events = el.events || (el.events = {})
   }
+  // 父组件的 child 节点生成的 el.events 和 el.nativeEvents 如下
+  // el.events = {
+  //   select: {
+  //     value: 'selectHandler'
+  //   }
+  // }
+  
+  // el.nativeEvents = {
+  //   click: {
+  //     value: 'clickHandler'
+  //   }
+  // }
+  
 
   const newHandler: any = rangeSetItem({ value: value.trim(), dynamic }, range)
   if (modifiers !== emptyObject) {
     newHandler.modifiers = modifiers
   }
 
+  // 第三步
+  // 最后按照 name 对事件做归类，并把回调函数的字符串保留到对应的事件中
   const handlers = events[name]
   /* istanbul ignore if */
   if (Array.isArray(handlers)) {

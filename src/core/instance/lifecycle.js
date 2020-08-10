@@ -29,19 +29,33 @@ export function setActiveInstance(vm: Component) {
   }
 }
 
+// 主要是给Vue实例上挂载了一些属性并设置了默认值
 export function initLifecycle (vm: Component) {
   const options = vm.$options
 
   // locate first non-abstract parent
   let parent = options.parent
+  // 如果当前组件 不是抽象组件 并且 存在父级
   if (parent && !options.abstract) {
+    // 通过while循环 来向上循环，如果当前组件的父级是抽象组件并且也存在父级，
+    // 那就继续向上查找当前组件父级的父级，直到找到第一个不是抽象类型的父级时，将其赋值vm.$parent，
     while (parent.$options.abstract && parent.$parent) {
       parent = parent.$parent
     }
+    // 同时把该实例自身添加进找到的父级的$children属性中
     parent.$children.push(vm)
   }
+  // 这样就确保了在子组件的$parent属性上能访问到父组件实例，
+  // 在父组件的$children属性上也能访问子组件的实例
+
+
+
 
   vm.$parent = parent
+  // 接着是给实例上挂载$root属性
+  // 挂载该属性时，首先会判断如果当前实例存在父级，
+  // 那么当前实例的根实例$root属性就是其父级的根实例$root属性，
+  // 如果不存在，那么根实例$root属性就是它自己
   vm.$root = parent ? parent.$root : vm
 
   vm.$children = []
@@ -333,12 +347,16 @@ export function deactivateChildComponent (vm: Component, direct?: boolean) {
   }
 }
 
+// 调用 钩子函数
 export function callHook (vm: Component, hook: string) {
   // #7573 disable dep collection when invoking lifecycle hooks
   pushTarget()
+  // 从实例的$options中获取到需要触发的钩子名称所对应的钩子函数数组handlers
   const handlers = vm.$options[hook]
   const info = `${hook} hook`
   if (handlers) {
+    // 每个生命周期钩子名称都对应了一个钩子函数数组。
+    // 然后遍历该数组，将数组中的每个钩子函数都执行一遍
     for (let i = 0, j = handlers.length; i < j; i++) {
       invokeWithErrorHandling(handlers[i], vm, null, vm, info)
     }

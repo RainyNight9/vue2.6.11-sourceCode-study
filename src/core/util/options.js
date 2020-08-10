@@ -312,6 +312,27 @@ export function validateComponentName (name: string) {
  * Ensure all props option syntax are normalized into the
  * Object-based format.
  */
+// // 写法一
+// props: ['name']
+
+// // 写法二
+// props: {
+//     name: String, // [String, Number]
+// }
+
+// // 写法三
+// props: {
+//     name:{
+// 		type: String
+//     }
+// }
+// // 上边的这几种写法转化成下边统一的写法
+// props: {
+//   name:{
+//       type: xxx
+//   }
+// }
+// 感觉转化这种开发格式就是 累赘，应该规范统一
 function normalizeProps (options: Object, vm: ?Component) {
   const props = options.props
   if (!props) return
@@ -349,6 +370,39 @@ function normalizeProps (options: Object, vm: ?Component) {
 /**
  * Normalize all injections into Object-based format
  */
+
+// // 写法一
+// var Child = {
+//   inject: ['foo']
+// }
+
+// // 写法二
+// const Child = {
+//   inject: {
+//     foo: { default: 'xxx' }
+//   }
+// }
+
+// // 写法三
+// const Child = {
+//   inject: {
+//     foo
+//   }
+// }
+// // 转变成下边的格式
+// const Child = {
+//   inject: {
+//     foo: {
+//       from: 'foo',
+//       default: 'xxx'  //如果有默认的值就有default属性
+//     }
+//   }
+// }
+
+// 我在想，为啥不直接让开发人员使用的时候按照规定的 格式书写呢？？省的框架去做这个，
+// 理由就是：既然是出了框架，框架最后都是要处理格式，就应该在使用文档api 上说明固定格式
+// 这样也会减少框架的 转化编译，提升性能，能让规定开发人员的事尽量还是规范一下。
+// 就是主要做框架的核心功能，专注核心，提升性能，优化方案。。。
 function normalizeInject (options: Object, vm: ?Component) {
   const inject = options.inject
   if (!inject) return

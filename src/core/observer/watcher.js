@@ -32,7 +32,7 @@ export default class Watcher {
   user: boolean;
   lazy: boolean;
   sync: boolean;
-  dirty: boolean;
+  dirty: boolean; // 标志计算属性的返回值是否有变化，计算属性的缓存就是通过这个属性来判断的，
   active: boolean;
   deps: Array<Dep>;
   newDeps: Array<Dep>;
@@ -167,6 +167,8 @@ export default class Watcher {
     /* istanbul ignore else */
     if (this.lazy) {
       // 赖加载情况
+      // 每当计算属性依赖的数据发生变化时，会将this.dirty属性设置为true，
+      // 这样下一次读取计算属性时，会重新计算结果返回，否则直接返回之前的计算结果
       this.dirty = true
     } else if (this.sync) {
       // 同步

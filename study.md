@@ -270,11 +270,55 @@ VNode类可以描述6种类型的节点，而实际上只有3种类型的节点�
 
 ![生命周期图](src/core/shengmingzhouqi.jpeg)
 
-1.Vue类的定义  // [源码位置：src/core/instance/index.js](src/core/instance/index.js)
+1.初始化阶段(new Vue)
 
-2.initMixin(Vue) // [源码位置：src/core/instance/init.js](src/core/instance/init.js)
+1.1.Vue类的定义  // [源码位置：src/core/instance/index.js](src/core/instance/index.js)
 
-3.Vue.options  // [源码位置：src/core/global-api/index.js](src/core/global-api/index.js)
+1.2.initMixin(Vue) // [源码位置：src/core/instance/init.js](src/core/instance/init.js)
+
+1.3.Vue.options  // [源码位置：src/core/global-api/index.js](src/core/global-api/index.js)
+
+2.初始化阶段(initLifecycle)
+
+2.1.initLifecycle函数 // [源码位置: src/core/instance/lifecycle.js](src/core/instance/lifecycle.js)
+    
+    该函数的逻辑非常简单，就是给实例初始化了一些属性，包括以$开头的供用户使用的外部属性，也包括以_开头的供内部使用的内部属性。
+
+3.初始化阶段(initEvents)
+
+    父组件给子组件的注册事件中，把自定义事件传给子组件，在子组件实例化的时候进行初始化；而浏览器原生事件是在父组件中处理。
+
+    换句话说：实例初始化阶段调用的初始化事件函数initEvents实际上初始化的是父组件在模板中使用v-on或@注册的监听子组件内触发的事件。
+
+3.1.processAttrs 方法解析标签中的属性 // [源码位置：src/compiler/parser/index.js](src/compiler/parser/index.js)
+
+3.2.initEvents函数分析 // [源码位置：src/core/instance/events.js](src/core/instance/events.js)
+
+4.初始化阶段(initInjections)
+
+    父组件可以使用provide选项给自己的下游子孙组件内注入一些数据，在下游子孙组件中可以使用inject选项来接收这些数据以便为自己所用。另外，这里有一点需要注意：provide 和 inject 选项绑定的数据不是响应式的
+
+4.1.initInjections函数分析 // [源码位置：src/core/instance/inject.js](src/core/instance/inject.js)
+
+5.初始化阶段(initState)
+
+5.1.initState函数分析 // [源码位置：src/core/instance/state.js](src/core/instance/state.js)
+
+5.2.initProps函数分析 // [源码位置：src/core/instance/state.js](src/core/instance/state.js)
+
+5.2.1.validateProp函数分析 // [源码位置：src/core/util/props.js](src/core/util/props.js)
+
+5.2.2.getPropDefaultValue函数分析 // [源码位置：src/core/util/props.js](src/core/util/props.js)
+
+5.2.3.assertProp函数分析 // [源码位置：src/core/util/props.js](src/core/util/props.js)
+
+5.3.初始化methods // [源码位置：src/core/instance/state.js](src/core/instance/state.js)
+
+5.4.初始化data // [源码位置：src/core/instance/state.js](src/core/instance/state.js)
+
+5.5.初始化computed // [源码位置：src/core/instance/state.js](src/core/instance/state.js)
+
+5.6.初始化watch // [源码位置：src/core/instance/state.js](src/core/instance/state.js)
 
 ### 7.指令篇
 

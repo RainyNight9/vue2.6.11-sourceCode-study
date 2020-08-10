@@ -274,13 +274,32 @@ export function genData (el: ASTElement, state: CodegenState): string {
   if (el.props) {
     data += `domProps:${genProps(el.props)},`
   }
+
+  // 关联 addHandler // 源码位置：src/compiler/helpers.js
+  // 初始化阶段(initEvents)
   // event handlers
+  // 一个浏览器原生事件  还是  自定义事件
   if (el.events) {
     data += `${genHandlers(el.events, false)},`
   }
   if (el.nativeEvents) {
     data += `${genHandlers(el.nativeEvents, true)},`
   }
+  // 生成的data数据如下：
+  // {
+  //   // ...
+  //   // 自定义事件对象on，浏览器原生事件nativeOn
+  //   on: {"select": selectHandler},
+  //   nativeOn: {"click": function($event) {
+  //       return clickHandler($event)
+  //     }
+  //   }
+  //   // ...
+  // }
+
+
+
+
   // slot target
   // only for non-scoped slots
   if (el.slotTarget && !el.slotScope) {

@@ -791,16 +791,19 @@ function processComponent (el) {
   }
 }
 
+// 解析标签中的属性
 function processAttrs (el) {
   const list = el.attrsList
   let i, l, name, rawName, value, modifiers, syncGen, isDynamic
   for (i = 0, l = list.length; i < l; i++) {
     name = rawName = list[i].name
     value = list[i].value
+    // 判断是不是 指令
     if (dirRE.test(name)) {
       // mark element as dynamic
       el.hasBindings = true
       // modifiers
+      // 解析修饰符
       modifiers = parseModifiers(name.replace(dirRE, ''))
       // support .foo shorthand syntax for the .prop modifier
       if (process.env.VBIND_PROP_SHORTHAND && propBindRE.test(name)) {
@@ -878,12 +881,13 @@ function processAttrs (el) {
         } else {
           addAttr(el, name, value, list[i], isDynamic)
         }
-      } else if (onRE.test(name)) { // v-on
+      } else if (onRE.test(name)) { // v-on 如果是 事件指令
         name = name.replace(onRE, '')
         isDynamic = dynamicArgRE.test(name)
         if (isDynamic) {
           name = name.slice(1, -1)
         }
+        // 事件
         addHandler(el, name, value, modifiers, false, warn, list[i], isDynamic)
       } else { // normal directives
         name = name.replace(dirRE, '')

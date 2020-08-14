@@ -3,14 +3,14 @@
 const validDivisionCharRE = /[\w).+\-_$\]]/
 
 export function parseFilters (exp: string): string {
-  let inSingle = false
-  let inDouble = false
-  let inTemplateString = false
-  let inRegex = false
-  let curly = 0
-  let square = 0
-  let paren = 0
-  let lastFilterIndex = 0
+  let inSingle = false // exp是否在 '' 中
+  let inDouble = false // exp是否在 "" 中
+  let inTemplateString = false // exp是否在 `` 中
+  let inRegex = false // exp是否在 \\ 中
+  let curly = 0 // 在exp中发现一个 { 则curly加1，发现一个 } 则curly减1，直到culy为0 说明 { ... }闭合
+  let square = 0 // 在exp中发现一个 [ 则curly加1，发现一个 ] 则curly减1，直到culy为0 说明 [ ... ]闭合
+  let paren = 0 // 在exp中发现一个 ( 则curly加1，发现一个 ) 则curly减1，直到culy为0 说明 ( ... )闭合
+  let lastFilterIndex = 0 // 解析游标，每循环过一个字符串游标加1
   let c, prev, i, expression, filters
 
   for (i = 0; i < exp.length; i++) {

@@ -115,6 +115,7 @@ export default class Watcher {
     } finally {
       // "touch" every property so they are all tracked as
       // dependencies for deep watching
+      // “触摸”每个属性，以便将它们全部作为深度监视的依赖项进行跟踪
       if (this.deep) {
         traverse(value)
       }
@@ -231,6 +232,7 @@ export default class Watcher {
   /**
    * Remove self from all dependencies' subscriber list.
    */
+
   teardown () {
     if (this.active) {
       // remove self from vm's watcher list

@@ -457,6 +457,7 @@ export function stateMixin (Vue: Class<Component>) {
   Object.defineProperty(Vue.prototype, '$data', dataDef)
   Object.defineProperty(Vue.prototype, '$props', propsDef)
 
+  // 三个操作数据的
   Vue.prototype.$set = set
   Vue.prototype.$delete = del
 
@@ -466,19 +467,28 @@ export function stateMixin (Vue: Class<Component>) {
     options?: Object
   ): Function {
     const vm: Component = this
+
+
     if (isPlainObject(cb)) {
       return createWatcher(vm, expOrFn, cb, options)
     }
     options = options || {}
-    options.user = true
+    // 用于区分用户创建的watcher实例和Vue内部创建的watcher实例
+    options.user = true 
     const watcher = new Watcher(vm, expOrFn, cb, options)
+
+    // immediate: true 将立即以表达式的当前值触发回调
     if (options.immediate) {
+      // 接着判断如果用户在选项参数options中指定的immediate为true，
+      // 则立即用被观察数据当前的值触发回调
       try {
         cb.call(vm, watcher.value)
       } catch (error) {
         handleError(error, vm, `callback for immediate watcher "${watcher.expression}"`)
       }
     }
+
+    //  返回一个取消观察函数，用来停止触发回调
     return function unwatchFn () {
       watcher.teardown()
     }

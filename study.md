@@ -256,15 +256,7 @@ VNode类可以描述6种类型的节点，而实际上只有3种类型的节点�
 
 // [源码位置：src/compiler/codegen/index.js](src/compiler/codegen/index.js)
 
-### 4.实例方法篇
-
-    学习Vue中所有实例方法(即所有以$开头的方法)的实现原理
-
-### 5.全局 API 篇
-
-    习Vue中所有全局API的实现原理
-
-### 6.生命周期篇
+### 4.生命周期篇
 
     学习Vue中组件的生命周期实现原理
 
@@ -320,14 +312,162 @@ VNode类可以描述6种类型的节点，而实际上只有3种类型的节点�
 
 5.6.初始化watch // [源码位置：src/core/instance/state.js](src/core/instance/state.js)
 
-### 7.指令篇
+6.模版编译阶段
+
+6.1.完整版的vm.$mount方法  // [源码位置：dist/vue.js](dist/vue.js)
+
+7.挂载阶段
+
+    在该阶段中所做的主要工作是创建Vue实例并用其替换el选项对应的DOM元素，同时还要开启对模板中数据（状态）的监控，当数据（状态）发生变化时通知其依赖进行视图更新。
+
+    我们将挂载阶段所做的工作分成两部分进行了分析，第一部分是将模板渲染到视图上，第二部分是开启对模板中数据（状态）的监控。两部分工作都完成以后挂载阶段才算真正的完成了
+
+7.1.mountComponent函数 // [源码位置：src/core/instance/lifecycle.js](src/core/instance/lifecycle.js)
+
+8.销毁阶段
+
+    在该阶段所做的主要工作是将当前的Vue实例从其父级实例中删除，取消当前实例上的所有依赖追踪并且移除实例上的所有事件监听器
+
+8.1.$destroy // [源码位置：src/core/instance.lifecycle.js](src/core/instance.lifecycle.js)
+
+### 5.实例方法篇
+
+    学习Vue中所有实例方法(即所有以$开头的方法)的实现原理
+
+1.数据相关的方法
+
+1.1.vm.$watch  // [源码位置：src/core/instance/state.js](src/core/instance/state.js)
+
+1.2.vm.$set  // [源码位置：src/core/observer/index.js](src/core/observer/index.js)
+
+1.3.vm.$delete  // [源码位置：src/core.observer/index.js](src/core.observer/index.js)
+
+2.事件相关的方法
+
+2.1.vm.$on // [源码位置：src/core/instance/events.js](src/core/instance/events.js)
+
+2.2.vm.$emit // [源码位置：src/core/instance/events.js](src/core/instance/events.js)
+
+2.3.vm.$off // [源码位置：src/core/instance/events.js](src/core/instance/events.js)
+
+2.4.vm.$once // [源码位置：src/core/instance/events.js](src/core/instance/events.js)
+
+3.生命周期相关的方法
+
+3.1.vm.$mount
+
+3.2.vm.$forceUpdate // [源码位置：src/core/instance/lifecycle.js](src/core/instance/lifecycle.js)
+
+3.3.vm.$nextTick // [源码位置：src/core/util/next-tick.js](src/core/util/next-tick.js)
+
+    涉及到Vue中对DOM的更新策略了，Vue 在更新 DOM 时是异步执行的。只要侦听到数据变化，Vue 将开启一个事件队列，并缓冲在同一事件循环中发生的所有数据变更。如果同一个 watcher 被多次触发，只会被推入到事件队列中一次。这种在缓冲时去除重复数据对于避免不必要的计算和 DOM 操作是非常重要的。然后，在下一个的事件循环“tick”中，Vue 刷新事件队列并执行实际 (已去重的) 工作
+
+3.3.1JS的运行机制
+
+    JS 执行是单线程的，它是基于事件循环的。事件循环大致分为以下几个步骤：
+
+    1.所有同步任务都在主线程上执行，形成一个执行栈（execution context stack）。
+    2.主线程之外，还存在一个"任务队列"（task queue）。只要异步任务有了运行结果，就在"任务队列"之中放置一个事件。
+    3.一旦"执行栈"中的所有同步任务执行完毕，系统就会读取"任务队列"，看看里面有哪些事件。那些对应的异步任务，于是结束等待状态，进入执行栈，开始执行。
+    4.主线程不断重复上面的第三步。
+
+    主线程的执行过程就是一个 tick，而所有的异步结果都是通过 “任务队列” 来调度。 
+    任务队列中存放的是一个个的任务（task）。 
+    规范中规定 task 分为两大类，分别是宏任务(macro task) 和微任务(micro task），并且每执行完一个个宏任务(macro task)后，都要去清空该宏任务所对应的微任务队列中所有的微任务(micro task）
+
+3.3.2.在浏览器环境中,常见的
+
+    宏任务(macro task) 有 setTimeout、MessageChannel、postMessage、setImmediate；
+    微任务(micro task）有MutationObsever 和 Promise.then
+
+3.4.vm.$destory
+
+### 6.全局 API 篇
+
+    习Vue中所有全局API的实现原理
+
+1.Vue.extend // [源码位置：src/core/global-api/extend.js](src/core/global-api/extend.js)
+
+2.Vue.nextTick
+
+3.Vue.set
+
+4.Vue.delete
+
+5.Vue.directive // [源码位置：src/core/global-api/index.js](src/core/global-api/index.js) // [源码位置：src/core/global-api/assets.js](src/core/global-api/assets.js)
+
+6.Vue.filter // [源码位置：src/core/global-api/index.js](src/core/global-api/index.js) // [源码位置：src/core/global-api/assets.js](src/core/global-api/assets.js)
+
+7.Vue.component // [源码位置：src/core/global-api/index.js](src/core/global-api/index.js) // [源码位置：src/core/global-api/assets.js](src/core/global-api/assets.js)
+
+8.Vue.use // [源码位置：src/core/global-api/use.js](src/core/global-api/use.js)
+
+9.Vue.mixin // [源码位置：src/core/global-api/mixin.js](src/core/global-api/mixin.js)
+
+10.Vue.compile
+
+11.Vue.observable
+
+12.Vue.version
+
+
+### 7.过滤器篇
+
+    学习Vue中所有过滤器的实现原理
+
+    过滤器有两种使用方式，分别是在双花括号插值中和在 v-bind 表达式中。
+    无论是哪种使用方式，它的使用形式都是表达式 | 过滤器1 | 过滤器2 | ...
+
+    另外，我们还知道了过滤器不仅可以单个使用，还可以多个串联一起使用。当多个过滤器串联一起使用的时候，前一个过滤器的输出是后一个过滤器的输入，通过将多种不同的过滤器进行组合使用来将文本处理成最终需要的格式
+
+1.resolveFilter函数 // [源码位置：src/core/instance/render-helpers/index.js](src/core/instance/render-helpers/index.js)
+
+    过滤器的内部工作原理，就是将用户写在模板中的过滤器通过模板编译，编译成_f函数的调用字符串，之后在执行渲染函数的时候会执行_f函数，从而使过滤器生效。
+
+    所谓_f函数其实就是resolveFilter函数的别名，在resolveFilter函数内部是根据过滤器id从当前实例的$options中的filters属性中获取到对应的过滤器函数，在之后执行渲染函数的时候就会执行获取到的过滤器函数
+
+2.parseFilters函数 // [源码位置：src/compiler/parser/filter-parser.js](src/compiler/parser/filter-parser.js)
+
+![解析过滤器](src/compiler/jiexiguolvqi.jpg)
+
+    该函数接收一个形如'message | capitalize'这样的过滤器字符串作为，最终将其转化成_f("capitalize")(message)输出。在parseFilters函数的内部是通过遍历传入的过滤器字符串每一个字符，根据每一个字符是否是一些特殊的字符从而作出不同的处理，最终，从传入的过滤器字符串中解析出待处理的表达式expression和所有的过滤器filters数组
+
+### 8.指令篇
 
     学习Vue中所有指令的实现原理
 
-### 8.过滤器篇
+    Vue对于自定义指令定义对象提供了几个钩子函数，这几个钩子函数分别对应着指令的几种状态，一个指令从第一次被绑定到元素上到最终与被绑定的元素解绑，它会经过以下几种状态：
 
-    学习Vue中所有过滤器的实现原理
+    * bind：只调用一次，指令第一次绑定到元素时调用。在这里可以进行一次性的初始化设置。
+    * inserted：被绑定元素插入父节点时调用 (仅保证父节点存在，但不一定已被插入文档中)。
+    * update：所在组件的 VNode 更新时调用，但是可能发生在其子 VNode 更新之前。
+    * componentUpdated：指令所在组件的 VNode 及其子 VNode 全部更新后调用。
+    * unbind：只调用一次，指令与元素解绑时调用。
+
+    有了每个状态的钩子函数，这样我们就可以让指令在不同状态下做不同的事情。
+
+1.updateDirectives函数 // [源码位置：src/core/vdom/modules/directives.js](src/core/vdom/modules/directives.js)
+
+    首先，如果一个DOM节点上绑定了指令，那么在这个DOM节点所对应虚拟DOM节点进行渲染更新的时候，不但会处理节点渲染更新的逻辑，还会处理节点上指令的相关逻辑。具体处理指令逻辑的时机是在虚拟DOM渲染更新的create、update、destory阶段。
+
+    接着，Vue对于自定义指令定义对象提供了几个钩子函数，这几个钩子函数分别对应着指令的几种状态，根据实际的需求将指令逻辑写在合适的指令状态钩子函数中，比如，想让指令所绑定的元素一插入到DOM中就执行指令逻辑，就应该把指令逻辑写在指令的inserted钩子函数中。
+
+    接着，updateDirectives函数中就是对比新旧两份VNode上的指令列表，通过对比的异同点从而执行指令不同的钩子函数，让指令生效。
+
+    最后，一句话概括就是：所谓让指令生效，其实就是在合适的时机执行定义指令时所设置的钩子函数。
 
 ### 9.内置组件篇
 
     学习Vue中内置组件的实现原理
+
+1.keep-alive // [源码位置：src/core/components/keep-alive.js](src/core/components/keep-alive.js)
+
+    <keep-alive>组件可接收三个属性：
+
+    include - 字符串或正则表达式。只有名称匹配的组件会被缓存。
+    exclude - 字符串或正则表达式。任何名称匹配的组件都不会被缓存。
+    max - 数字。最多可以缓存多少组件实例
+
+    include 和 exclude 属性允许组件有条件地缓存。二者都可以用逗号分隔字符串、正则表达式或一个数组来表示
+
+    max表示最多可以缓存多少组件实例。一旦这个数字达到了，在新实例被创建之前，已缓存组件中最久没有被访问的实例会被销毁掉

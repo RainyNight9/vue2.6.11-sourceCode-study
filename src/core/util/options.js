@@ -530,14 +530,21 @@ export function resolveAsset (
     return
   }
   const assets = options[type]
+
+  // 先从本地注册中查找
   // check local registration variations first
+  // 先通过hasOwn函数检查assets自身中是否存在，如果存在则直接返回；
   if (hasOwn(assets, id)) return assets[id]
+  // 如果不存在，则将过滤器id转化成驼峰式后再次查找，如果存在则直接返回；
   const camelizedId = camelize(id)
   if (hasOwn(assets, camelizedId)) return assets[camelizedId]
+  // 如果也不存在，则将过滤器id转化成首字母大写后再次查找，如果存在则直接返回；
   const PascalCaseId = capitalize(camelizedId)
   if (hasOwn(assets, PascalCaseId)) return assets[PascalCaseId]
   // fallback to prototype chain
+  // 如果还不存在，则再从原型链中查找，如果存在则直接返回；
   const res = assets[id] || assets[camelizedId] || assets[PascalCaseId]
+  // 如果还不存在，则在非生产环境下抛出警告
   if (process.env.NODE_ENV !== 'production' && warnMissing && !res) {
     warn(
       'Failed to resolve ' + type.slice(0, -1) + ': ' + id,

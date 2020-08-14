@@ -101,6 +101,8 @@ export function lifecycleMixin (Vue: Class<Component>) {
     // updated in a parent's updated hook.
   }
 
+  // 当前实例的_watcher属性就是该实例的watcher，
+  // 所以要想让实例重新渲染，只需手动的去执行一下实例watcher的update方法即可
   Vue.prototype.$forceUpdate = function () {
     const vm: Component = this
     if (vm._watcher) {
@@ -110,16 +112,31 @@ export function lifecycleMixin (Vue: Class<Component>) {
 
   Vue.prototype.$destroy = function () {
     const vm: Component = this
+    // 首先判断当前实例的_isBeingDestroyed属性是否为true，
+    // 因为该属性标志着当前实例是否处于正在被销毁的状态，
+    // 如果它为true，则直接return退出函数，防止反复执行销毁逻辑
     if (vm._isBeingDestroyed) {
       return
     }
+    // 接着，触发生命周期钩子函数beforeDestroy，该钩子函数的调用标志着当前实例正式开始销毁
     callHook(vm, 'beforeDestroy')
     vm._isBeingDestroyed = true
     // remove self from parent
+
+    // 开始真正的销毁逻辑
+    // 首先，需要将当前的Vue实例从其父级实例中删除
     const parent = vm.$parent
+    // 如果当前实例有父级实例，同时该父级实例没有被销毁并且不是抽象组件，
+    // 那么就将当前实例从其父级实例的$children属性中删除，即将自己从父级实例的子实例列表中删除
     if (parent && !parent._isBeingDestroyed && !vm.$options.abstract) {
       remove(parent.$children, vm)
     }
+
+
+    // 实例身上的依赖包含两部分：
+    // 一部分是实例自身依赖其他数据，需要将实例自身从其他数据的依赖列表中删除；
+    // 另一部分是实例内的数据对其他数据的依赖（如用户使用$watch创建的依赖），
+    // 也需要从其他数据的依赖列表中删除实例内数据
     // teardown watchers
     if (vm._watcher) {
       vm._watcher.teardown()
@@ -128,6 +145,11 @@ export function lifecycleMixin (Vue: Class<Component>) {
     while (i--) {
       vm._watchers[i].teardown()
     }
+
+
+    // 接下来移除实例内响应式数据的引用、
+    // 给当前实例上添加_isDestroyed属性来表示当前实例已经被销毁，
+    // 同时将实例的VNode树设置为null
     // remove reference from data ob
     // frozen object may not have observer.
     if (vm._data.__ob__) {
@@ -137,10 +159,18 @@ export function lifecycleMixin (Vue: Class<Component>) {
     vm._isDestroyed = true
     // invoke destroy hooks on current rendered tree
     vm.__patch__(vm._vnode, null)
+
+
+    // 接着，触发生命周期钩子函数destroyed
     // fire destroyed hook
     callHook(vm, 'destroyed')
     // turn off all instance listeners.
+
+    // 最后，调用实例的vm.$off方法，移除实例上的所有事件监听器
     vm.$off()
+
+
+    // 最后，再移除一些相关属性的引用
     // remove __vue__ reference
     if (vm.$el) {
       vm.$el.__vue__ = null
@@ -152,13 +182,17 @@ export function lifecycleMixin (Vue: Class<Component>) {
   }
 }
 
+// 挂载
 export function mountComponent (
   vm: Component,
   el: ?Element,
   hydrating?: boolean
 ): Component {
   vm.$el = el
+  // 首先会判断实例上是否存在渲染函数
   if (!vm.$options.render) {
+    // 如果不存在，则设置一个默认的渲染函数createEmptyVNode，
+    // 该渲染函数会创建一个注释类型的VNode节点
     vm.$options.render = createEmptyVNode
     if (process.env.NODE_ENV !== 'production') {
       /* istanbul ignore if */
@@ -178,7 +212,9 @@ export function mountComponent (
       }
     }
   }
+  // 然后调用callHook函数来触发beforeMount生命周期钩子函数
   callHook(vm, 'beforeMount')
+  // 该钩子函数触发后标志着正式开始执行挂载操作
 
   let updateComponent
   /* istanbul ignore if */
@@ -208,7 +244,13 @@ export function mountComponent (
   // we set this to vm._watcher inside the watcher's constructor
   // since the watcher's initial patch may call $forceUpdate (e.g. inside child
   // component's mounted hook), which relies on vm._watcher being already defined
-  new Watcher(vm, updateComponent, noop, {
+  // 接下来创建了一个Watcher实例，并将定义好的updateComponent函数传入。
+  // 要想开启对模板中数据（状态）的监控，这一段代码是关键
+  new Watcher(
+    vm, 
+    updateComponent, // 支持 函数 和 数据路径（a.b.c）
+    noop, 
+    {
     before () {
       if (vm._isMounted && !vm._isDestroyed) {
         callHook(vm, 'beforeUpdate')

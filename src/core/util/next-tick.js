@@ -7,13 +7,17 @@ import { isIE, isIOS, isNative } from './env'
 
 export let isUsingMicroTask = false
 
-const callbacks = []
-let pending = false
+const callbacks = []  // 回调队列
+let pending = false  // 异步锁
 
+// 执行队列中的每一个回调
 function flushCallbacks () {
-  pending = false
+  pending = false // 重置异步锁
+  // 防止出现nextTick中包含nextTick时出现问题，
+  // 在执行回调函数队列前，提前复制备份并清空回调函数队列
   const copies = callbacks.slice(0)
   callbacks.length = 0
+  // 执行回调函数队列
   for (let i = 0; i < copies.length; i++) {
     copies[i]()
   }
@@ -84,7 +88,10 @@ if (typeof Promise !== 'undefined' && isNative(Promise)) {
   }
 }
 
+// 1.能力检测
+// 2.根据能力检测以不同方式执行回调队列
 export function nextTick (cb?: Function, ctx?: Object) {
+  // 将回调函数推入回调队列
   let _resolve
   callbacks.push(() => {
     if (cb) {
@@ -97,10 +104,14 @@ export function nextTick (cb?: Function, ctx?: Object) {
       _resolve(ctx)
     }
   })
+
+  // 如果异步锁未锁上，锁上异步锁，调用异步函数，准备等同步函数执行完后，就开始执行回调函数队列
   if (!pending) {
     pending = true
     timerFunc()
   }
+
+  // 如果没有提供回调，并且支持Promise，返回一个Promise 
   // $flow-disable-line
   if (!cb && typeof Promise !== 'undefined') {
     return new Promise(resolve => {

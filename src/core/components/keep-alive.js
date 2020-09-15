@@ -6,11 +6,11 @@ import { getFirstComponentChild } from 'core/vdom/helpers/index'
 type VNodeCache = { [key: string]: ?VNode };
 
 // 优先获取组件的name字段，如果name不存在则获取组件的tag
-function getComponentName (opts: ?VNodeComponentOptions): ?string {
+function getComponentName(opts: ?VNodeComponentOptions): ?string {
   return opts && (opts.Ctor.options.name || opts.tag)
 }
 
-function matches (pattern: string | RegExp | Array<string>, name: string): boolean {
+function matches(pattern: string | RegExp | Array<string>, name: string): boolean {
   if (Array.isArray(pattern)) {
     return pattern.indexOf(name) > -1
   } else if (typeof pattern === 'string') {
@@ -22,7 +22,7 @@ function matches (pattern: string | RegExp | Array<string>, name: string): boole
   return false
 }
 
-function pruneCache (keepAliveInstance: any, filter: Function) {
+function pruneCache(keepAliveInstance: any, filter: Function) {
   const { cache, keys, _vnode } = keepAliveInstance
   // 对this.cache对象进行遍历
   // 取出每一项的name值，用其与新的缓存规则进行匹配，
@@ -39,7 +39,8 @@ function pruneCache (keepAliveInstance: any, filter: Function) {
   }
 }
 
-function pruneCacheEntry (
+// 负责将组件从缓存中删除
+function pruneCacheEntry(
   cache: VNodeCache,
   key: string,
   keys: Array<string>,
@@ -62,7 +63,7 @@ const patternTypes: Array<Function> = [String, RegExp, Array]
 // 执行 <keep-alive> 组件渲染的时候，就会执行到这个 render 函数
 export default {
   name: 'keep-alive',
-  abstract: true,
+  abstract: true, // 表示是一个抽象组件， initLifecycle方法 如果是抽象组件，选取抽象组件的上一层作为父级。
 
   props: {
     include: patternTypes, // 表示只有匹配到的组件会被缓存
@@ -70,7 +71,7 @@ export default {
     max: [String, Number] // 表示缓存组件的数量
   },
 
-  created () {
+  created() {
     this.cache = Object.create(null) // this.cache是一个对象，用来存储需要缓存的组件
     this.keys = [] // this.keys是一个数组，用来存储每个需要缓存的组件的key
   },
@@ -78,7 +79,7 @@ export default {
   // 当<keep-alive>组件被销毁时，此时会调用destroyed钩子函数
   // 在该钩子函数里会遍历this.cache对象，
   // 然后将那些被缓存的并且当前没有处于被渲染状态的组件都销毁掉并将其从this.cache对象中剔除
-  destroyed () {
+  destroyed() {
     for (const key in this.cache) {
       pruneCacheEntry(this.cache, key, this.keys)
     }
@@ -87,7 +88,7 @@ export default {
   // 如果include 或exclude 发生了变化，
   // 即表示定义需要缓存的组件的规则或者不需要缓存的组件的规则发生了变化，
   // 那么就执行pruneCache函数
-  mounted () {
+  mounted() {
     this.$watch('include', val => {
       pruneCache(this, name => matches(val, name))
     })
@@ -96,7 +97,7 @@ export default {
     })
   },
 
-  render () {
+  render() {
     // 获取默认插槽中的第一个组件节点
     // 首先获取第一个子组件节点的 vnode
     const slot = this.$slots.default
@@ -124,7 +125,7 @@ export default {
         // so cid alone is not enough (#3269)
         ? componentOptions.Ctor.cid + (componentOptions.tag ? `::${componentOptions.tag}` : '')
         : vnode.key
-      
+
       // 如果命中缓存，则直接从缓存中拿 vnode 的组件实例
       if (cache[key]) {
         vnode.componentInstance = cache[key].componentInstance
@@ -143,9 +144,10 @@ export default {
         }
       }
 
-      // 最后设置keepAlive标记位
+      // 最后设置keepAlive标记位，表示他被缓存了
       vnode.data.keepAlive = true
     }
+    // 渲染的对象是包裹的子组件
     return vnode || (slot && slot[0])
   }
 }
